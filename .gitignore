@@ -1,0 +1,55 @@
+# Credenciais e segredos
+*.json
+!package.json
+.env
+.env.*
+service_account*.json
+token*.json
+
+# Ambiente virtual Python
+venv/
+env/
+.venv/
+.env/
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Dados (gerados/baixados)
+data/raw/
+data/processed/
+*.parquet
+*.csv
+*.xlsx
+*.db
+*.sqlite
+
+# Figuras geradas
+figuras/
+*.png
+*.jpg
+*.jpeg
+*.svg
+
+# IDEs e editores
+.vscode/
+.idea/
+*.code-workspace
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs e temporários
+*.log
+*.tmp
+*.bak
