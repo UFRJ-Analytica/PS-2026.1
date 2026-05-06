@@ -52,18 +52,23 @@ O GraphHopper aplica esses pesos como penalidades nos segmentos de rua via Custo
 rotario/
 │
 ├── data/
-│   ├── raw/                        # dados brutos — nunca modificar diretamente
+│   ├── raw/                        # dados brutos
 │   │   ├── fogo_cruzado/
 │   │   ├── gtfs/
 │   │   └── isp_rj/
 │   └── processed/                  # dados tratados, gerados por src/data.py
 │
 ├── notebooks/
-│   └── Orientações_Analytica/      # material de referência da competição
+│   ├── 01_EDA_crossfire.ipynb    # EDA do Fogo Cruzado
+│   ├── 02_EDA_ISP.ipynb.ipynb    # EDA do ISP-rj
+│   └── 03_EDA_SMTR.ipynb         # EDA do SMTR          
+│
+├──Orientações_Analytica/      # material de referência
 │
 ├── src/
 │   └── __init__.py
 │
+├── .gitignore
 ├── app.py                          # onde mostrará ao usuário
 ├── requirements.txt
 └── README.md
