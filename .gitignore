@@ -25,12 +25,15 @@ __pycache__/
 
 # Dados (gerados/baixados)
 data/raw/
-data/processed/
 *.parquet
 *.csv
 *.xlsx
 *.db
 *.sqlite
+
+# data/processed/ é versionado para compartilhar com o grupo
+!data/processed/
+!data/processed/*.parquet
 
 # Figuras geradas
 figuras/
