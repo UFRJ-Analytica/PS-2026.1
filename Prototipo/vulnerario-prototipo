@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VulneraRIO - Dashboard</title>
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+  <style>
+    /* Declarando as variáveis que estavam faltando */
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f4f6f8;
+      --color-border-secondary: #dfe3e8;
+      --color-border-tertiary: #c4cdd5;
+      --color-text-primary: #212b36;
+      --color-text-secondary: #637381;
+      --border-radius-md: 6px;
+      --border-radius-lg: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+      font-family: var(--font-sans); 
+      background-color: #e9ecef; /* Fundo cinza para destacar o dashboard */
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Container principal do Dashboard */
+    .dashboard-container {
+      width: 100%;
+      max-width: 1000px;
+      background: var(--color-background-primary);
+      border: 1px solid var(--color-border-tertiary); 
+      border-radius: var(--border-radius-lg); 
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    .nav { background: #0057A8; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0; }
+    .nav-brand { color: #fff; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-btn { background: transparent; border: none; color: rgba(255,255,255,0.75); font-size: 14px; padding: 8px 16px; border-radius: var(--border-radius-md); cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;}
+    .nav-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .nav-btn.active { background: rgba(255,255,255,0.25); color: #fff; font-weight: 500;}
+    
+    /* Telas com transição suave */
+    .screen { display: none; animation: fadeIn 0.3s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 20px; }
+    .badge-red { background: #FEE2E2; color: #991B1B; }
+    .badge-amber { background: #FEF3C7; color: #92400E; }
+    .badge-green { background: #D1FAE5; color: #065F46; }
+    
+    .card { background: var(--color-background-primary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; }
+    .metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 16px; border: 1px solid var(--color-border-secondary);}
+    .metric-label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600;}
+    .metric-value { font-size: 24px; font-weight: 600; color: var(--color-text-primary); }
+    .metric-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+    
+    .section-title { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+    .ivh-bar-wrap { margin-bottom: 12px; }
+    .ivh-bar-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--color-text-primary); margin-bottom: 4px; }
+    .ivh-bar-track { height: 8px; background: var(--color-border-secondary); border-radius: 4px; overflow: hidden; }
+    .ivh-bar-fill { height: 100%; border-radius: 4px; }
+    
+    .tag { font-size: 11px; color: var(--color-text-primary); background: var(--color-border-secondary); padding: 4px 10px; border-radius: var(--border-radius-md); display: inline-block; font-weight: 500;}
+    .btn-primary { background: #0057A8; color: #fff; border: none; padding: 10px 20px; border-radius: var(--border-radius-md); font-size: 14px; cursor: pointer; font-weight: 500; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;}
+    .btn-primary:hover { background: #004482; }
+    .btn-secondary { background: transparent; color: #0057A8; border: 1px solid #0057A8; padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: all 0.2s;}
+    .btn-secondary:hover { background: #f0f7ff; }
+    
+    .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .tbl th { font-size: 12px; color: var(--color-text-secondary); font-weight: 600; text-align: left; padding: 10px; border-bottom: 1px solid var(--color-border-tertiary); }
+    .tbl td { padding: 10px; border-bottom: 1px solid var(--color-border-secondary); color: var(--color-text-primary); }
+    .tbl tr:last-child td { border-bottom: none; }
+    .prob-pill { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    
+    select { font-size: 14px; padding: 8px 12px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border-tertiary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; outline: none;}
+    select:focus { border-color: #0057A8; }
+    
+    .alert-banner { background: #FEE2E2; border: 1px solid #fecaca; border-radius: var(--border-radius-md); padding: 16px; display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+    
+    .month-bar { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+    .month-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+    .month-rect { width: 100%; background: #B5D4F4; border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
+    .month-rect.highlight { background: #0057A8; }
+    .month-lbl { font-size: 11px; color: var(--color-text-secondary); font-weight: 500;}
+  </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+  <nav class="nav">
+    <div class="nav-brand">
+      <i class="ti ti-droplet" aria-hidden="true" style="font-size:22px;"></i>
+      VulneraRIO
+    </div>
+    <div class="nav-links">
+      <button class="nav-btn active" data-target="screen-map">
+        <i class="ti ti-map" aria-hidden="true"></i> Mapa
+      </button>
+      <button class="nav-btn" data-target="screen-bairro">
+        <i class="ti ti-chart-bar" aria-hidden="true"></i> Bairros
+      </button>
+      <button class="nav-btn" data-target="screen-sim">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i> Simulador
+      </button>
+    </div>
+  </nav>
+
+  <div id="screen-map" class="screen active" style="padding: 20px; background: var(--color-background-primary);">
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
+      <div class="metric-card">
+        <div class="metric-label">Bairros analisados</div>
+        <div class="metric-value">87</div>
+        <div class="metric-sub">de 166 no município</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Eventos registrados</div>
+        <div class="metric-value">335</div>
+        <div class="metric-sub">2017 – 2024</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Bairros em alerta</div>
+        <div class="metric-value" style="color: #991B1B;">23</div>
+        <div class="metric-sub">IVH acima de 60</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Mês mais crítico</div>
+        <div class="metric-value">Fev</div>
+        <div class="metric-sub">odds ratio 2,12x</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+
+      <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--color-text-primary);">Índice de vulnerabilidade hídrica por bairro</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span style="font-size: 12px; color: var(--color-text-secondary); font-weight: 500;">Filtrar:</span>
+            <select onchange="filterMap(this.value)">
+              <option value="all">Todos os clusters</option>
+              <option value="high">Alta vulnerabilidade</option>
+              <option value="mid">Média vulnerabilidade</option>
+              <option value="low">Baixa vulnerabilidade</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: var(--color-background-secondary); padding: 20px;">
+          <svg viewBox="0 0 440 260" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width: 500px; display:block;" role="img" aria-label="Mapa esquemático do Rio de Janeiro">
+            <text x="220" y="20" text-anchor="middle" font-size="10" fill="var(--color-text-secondary)">Município do Rio de Janeiro — IVH normalizado (0–100)</text>
+
+            <g opacity="0.10">
+              <ellipse cx="220" cy="130" rx="190" ry="95" fill="#0057A8"/>
+            </g>
+
+            <ellipse cx="80" cy="155" rx="55" ry="40" fill="#E24B4A" opacity="0.85"/>
+            <text x="80" y="148" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">Zona Oeste</text>
+            <text x="80" y="159" text-anchor="middle" font-size="8" fill="#fff">IVH 74–87</text>
+
+            <ellipse cx="240" cy="100" rx="60" ry="35" fill="#EF9F27" opacity="0.8"/>
+            <text x="240" y="95" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">Zona Norte</text>
+            <text x="240" y="106" text-anchor="middle" font-size="8" fill="#fff">IVH 45–62</text>
+
+            <ellipse cx="310" cy="145" rx="40" ry="28" fill="#EF9F27" opacity="0.7"/>
+            <text x="310" y="140" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">Centro</text>
+            <text x="310" y="151" text-anchor="middle" font-size="8" fill="#fff">IVH 42–55</text>
+
+            <ellipse cx="355" cy="195" rx="45" ry="25" fill="#639922" opacity="0.75"/>
+            <text x="355" y="190" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">Zona Sul</text>
+            <text x="355" y="201" text-anchor="middle" font-size="8" fill="#fff">IVH 18–35</text>
+
+            <ellipse cx="155" cy="210" rx="45" ry="22" fill="#639922" opacity="0.7"/>
+            <text x="155" y="205" text-anchor="middle" font-size="9" fill="#fff" font-weight="600">Barra / Recreio</text>
+            <text x="155" y="216" text-anchor="middle" font-size="8" fill="#fff">IVH 22–38</text>
+
+            <circle cx="65" cy="140" r="5" fill="#791F1F" stroke="#fff" stroke-width="1"/>
+            <text x="65" y="130" text-anchor="middle" font-size="8" fill="#501313" font-weight="600">Guaratiba</text>
+
+            <circle cx="95" cy="148" r="4" fill="#791F1F" stroke="#fff" stroke-width="1"/>
+            <text x="95" y="140" text-anchor="middle" font-size="8" fill="#501313" font-weight="600">Cpo. Grande</text>
+
+            <circle cx="75" cy="168" r="4" fill="#791F1F" stroke="#fff" stroke-width="1"/>
+            <text x="75" y="180" text-anchor="middle" font-size="8" fill="#501313" font-weight="600">Santa Cruz</text>
+
+            <rect x="10" y="230" width="10" height="10" fill="#E24B4A" opacity="0.85" rx="2"/>
+            <text x="25" y="239" font-size="9" fill="var(--color-text-secondary)">Alta (IVH 60–100)</text>
+            <rect x="110" y="230" width="10" height="10" fill="#EF9F27" opacity="0.8" rx="2"/>
+            <text x="125" y="239" font-size="9" fill="var(--color-text-secondary)">Média (IVH 30–59)</text>
+            <rect x="215" y="230" width="10" height="10" fill="#639922" opacity="0.75" rx="2"/>
+            <text x="230" y="239" font-size="9" fill="var(--color-text-secondary)">Baixa (IVH 0–29)</text>
+          </svg>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="card">
+          <div class="section-title">Top 5 bairros — IVH</div>
+          <div id="top5-list">
+            <div class="ivh-bar-wrap">
+              <div class="ivh-bar-label"><span>Guaratiba</span><span style="font-weight:600;">87.3</span></div>
+              <div class="ivh-bar-track"><div class="ivh-bar-fill" style="width:87.3%; background:#E24B4A;"></div></div>
+            </div>
+            <div class="ivh-bar-wrap">
+              <div class="ivh-bar-label"><span>Campo Grande</span><span style="font-weight:600;">82.1</span></div>
+              <div class="ivh-bar-track"><div class="ivh-bar-fill" style="width:82.1%; background:#E24B4A;"></div></div>
+            </div>
+            <div class="ivh-bar-wrap">
+              <div class="ivh-bar-label"><span>Santa Cruz</span><span style="font-weight:600;">74.5</span></div>
+              <div class="ivh-bar-track"><div class="ivh-bar-fill" style="width:74.5%; background:#E24B4A;"></div></div>
+            </div>
+            <div class="ivh-bar-wrap">
+              <div class="ivh-bar-label"><span>Piedade</span><span style="font-weight:600;">61.2</span></div>
+              <div class="ivh-bar-track"><div class="ivh-bar-fill" style="width:61.2%; background:#EF9F27;"></div></div>
+            </div>
+            <div class="ivh-bar-wrap">
+              <div class="ivh-bar-label"><span>Tijuca</span><span style="font-weight:600;">55.8</span></div>
+              <div class="ivh-bar-track"><div class="ivh-bar-fill" style="width:55.8%; background:#EF9F27;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Cluster K-Means (K=4)</div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge badge-red"><i class="ti ti-circle-filled" style="font-size:10px;" aria-hidden="true"></i> Fragilidade Extrema</span>
+              <span style="font-size: 13px; font-weight:500; color: var(--color-text-primary);">9 bairros</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge badge-amber" style="background:#fce7f3; color:#9d174d;"><i class="ti ti-circle-filled" style="font-size:10px;" aria-hidden="true"></i> Vulneráveis Crônicos</span>
+              <span style="font-size: 13px; font-weight:500; color: var(--color-text-primary);">3 bairros</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge badge-amber"><i class="ti ti-circle-filled" style="font-size:10px;" aria-hidden="true"></i> Moderação / Regra Geral</span>
+              <span style="font-size: 13px; font-weight:500; color: var(--color-text-primary);">21 bairros</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge badge-green"><i class="ti ti-circle-filled" style="font-size:10px;" aria-hidden="true"></i> Resilientes</span>
+              <span style="font-size: 13px; font-weight:500; color: var(--color-text-primary);">4 bairros</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" data-target="screen-bairro" style="width:100%; margin-top: auto;">
+          Ver análise detalhada ↗
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-bairro" class="screen" style="background: var(--color-background-primary);">
+    <div style="background: #0057A8; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button class="nav-btn" data-target="screen-map" style="background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 12px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer;">
+          <i class="ti ti-arrow-left" aria-hidden="true"></i> Voltar
+        </button>
+        <div>
+          <div style="color: #fff; font-size: 20px; font-weight: 600;">Guaratiba</div>
+          <div style="color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 2px;">Zona Oeste · Estação Alerta Rio: Guaratiba</div>
+        </div>
+      </div>
+      <span class="badge badge-red" style="background: rgba(255,255,255,0.2); color: #fff; font-size: 12px; padding: 6px 12px;">
+        <i class="ti ti-alert-triangle" style="font-size:14px;" aria-hidden="true"></i> Fragilidade Extrema
+      </span>
+    </div>
+
+    <div style="padding: 20px;">
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
+        <div class="metric-card">
+          <div class="metric-label">IVH Normalizado</div>
+          <div class="metric-value" style="color:#991B1B;">87.3</div>
+          <div class="metric-sub">Nota de sensibilidade (0-100)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Eventos Históricos</div>
+          <div class="metric-value">11</div>
+          <div class="metric-sub">Ocorrências 1746 (2017-2024)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Probabilidade — Fev</div>
+          <div class="metric-value" style="color:#991B1B;">0.65%</div>
+          <div class="metric-sub">Fator 3.0x vs. média da cidade</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Gatilho Meteorológico</div>
+          <div class="metric-value">18.5 <span style="font-size: 14px; color: var(--color-text-secondary)">mm</span></div>
+          <div class="metric-sub">Chuva média deflagradora</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div class="card">
+          <div class="section-title">Logit: Multiplicador de Risco por Mês</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size:12px; font-weight: 500; color:var(--color-text-secondary); width:30px;">Jan</span>
+              <div style="flex:1; height:10px; background:var(--color-border-secondary); border-radius:5px; overflow:hidden;"><div style="width:35%; height:100%; background:#378ADD; border-radius:5px;"></div></div>
+              <span style="font-size:12px; font-weight: 600; color:var(--color-text-secondary);">1.5x</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size:12px; color:#991B1B; width:30px; font-weight:600;">Fev</span>
+              <div style="flex:1; height:10px; background:var(--color-border-secondary); border-radius:5px; overflow:hidden;"><div style="width:100%; height:100%; background:#E24B4A; border-radius:5px;"></div></div>
+              <span style="font-size:12px; color:#991B1B; font-weight:600;">3.0x</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size:12px; font-weight: 500; color:var(--color-text-secondary); width:30px;">Mar</span>
+              <div style="flex:1; height:10px; background:var(--color-border-secondary); border-radius:5px; overflow:hidden;"><div style="width:60%; height:100%; background:#378ADD; border-radius:5px;"></div></div>
+              <span style="font-size:12px; font-weight: 600; color:var(--color-text-secondary);">2.1x</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size:12px; font-weight: 500; color:var(--color-text-secondary); width:30px;">Abr</span>
+              <div style="flex:1; height:10px; background:var(--color-border-secondary); border-radius:5px; overflow:hidden;"><div style="width:20%; height:100%; background:#378ADD; border-radius:5px;"></div></div>
+              <span style="font-size:12px; font-weight: 600; color:var(--color-text-secondary);">0.8x</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size:12px; font-weight: 500; color:var(--color-text-secondary); width:30px;">...</span>
+              <div style="flex:1; height:10px; background:var(--color-border-secondary); border-radius:5px; overflow:hidden;"><div style="width:15%; height:100%; background:#378ADD; border-radius:5px;"></div></div>
+              <span style="font-size:12px; font-weight: 600; color:var(--color-text-secondary);">&lt;1x</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size:12px; font-weight: 500; color:var(--color-text-secondary); width:30px;">Dez</span>
+              <div style="flex:1; height:10px; background:var(--color-border-secondary); border-radius:5px; overflow:hidden;"><div style="width:45%; height:100%; background:#378ADD; border-radius:5px;"></div></div>
+              <span style="font-size:12px; font-weight: 600; color:var(--color-text-secondary);">1.7x</span>
+            </div>
+          </div>
+          <div style="margin-top:16px; font-size:11px; color:var(--color-text-secondary); text-align: right;">Baseline modelo logit: taxa base de 0.217%</div>
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column;">
+          <div class="section-title">Sazonalidade Histórica de Eventos</div>
+          <div class="month-bar" style="margin-bottom: 16px;">
+            <div class="month-col"><div class="month-rect" style="height:25%;"></div><span class="month-lbl">J</span></div>
+            <div class="month-col"><div class="month-rect highlight" style="height:100%;"></div><span class="month-lbl">F</span></div>
+            <div class="month-col"><div class="month-rect highlight" style="height:70%;"></div><span class="month-lbl">M</span></div>
+            <div class="month-col"><div class="month-rect" style="height:15%;"></div><span class="month-lbl">A</span></div>
+            <div class="month-col"><div class="month-rect" style="height:10%;"></div><span class="month-lbl">M</span></div>
+            <div class="month-col"><div class="month-rect" style="height:5%;"></div><span class="month-lbl">J</span></div>
+            <div class="month-col"><div class="month-rect" style="height:5%;"></div><span class="month-lbl">J</span></div>
+            <div class="month-col"><div class="month-rect" style="height:10%;"></div><span class="month-lbl">A</span></div>
+            <div class="month-col"><div class="month-rect" style="height:15%;"></div><span class="month-lbl">S</span></div>
+            <div class="month-col"><div class="month-rect" style="height:20%;"></div><span class="month-lbl">O</span></div>
+            <div class="month-col"><div class="month-rect highlight" style="height:50%;"></div><span class="month-lbl">N</span></div>
+            <div class="month-col"><div class="month-rect highlight" style="height:60%;"></div><span class="month-lbl">D</span></div>
+          </div>
+          
+          <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--color-border-secondary);">
+            <div class="section-title" style="margin-bottom: 10px;">Bairros no mesmo Cluster K-Means</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span class="tag">Campo Grande</span>
+              <span class="tag">Santa Cruz</span>
+              <span class="tag">Sepetiba</span>
+              <span class="tag">Bangu</span>
+              <span class="tag" style="background: transparent; border: 1px dashed var(--color-border-tertiary);">+ 4 bairros</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Extrato de Ocorrências (1746)</div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Subtipo de Chamado</th>
+              <th>Chuva no Dia (Estação local)</th>
+              <th>Canal</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 500;">15/02/2020</td>
+              <td>Enchentes e saneamento</td>
+              <td>87.3 mm</td>
+              <td><span class="tag">App</span></td>
+              <td><span class="badge badge-green">Fechado</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 500;">03/03/2019</td>
+              <td>Enchentes e saneamento - Rio-Águas</td>
+              <td>45.2 mm</td>
+              <td><span class="tag">Telefone</span></td>
+              <td><span class="badge badge-green">Fechado</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 500;">18/01/2018</td>
+              <td>Enchentes e saneamento</td>
+              <td>62.1 mm</td>
+              <td><span class="tag">Telefone</span></td>
+              <td><span class="badge badge-green">Fechado</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight: 500;">07/02/2018</td>
+              <td>Enchentes e saneamento - Rio-Águas</td>
+              <td>94.5 mm</td>
+              <td><span class="tag">Web</span></td>
+              <td><span class="badge badge-green">Fechado</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-sim" class="screen" style="background: var(--color-background-primary);">
+    <div style="background: var(--color-background-secondary); padding: 20px 24px; border-bottom: 1px solid var(--color-border-tertiary);">
+      <div style="font-size: 15px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 16px;"><i class="ti ti-settings" style="vertical-align: text-bottom;"></i> Parâmetros do Cenário de Risco</div>
+      <div style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:12px; font-weight:600; color:var(--color-text-secondary);">Mês Sazonal</label>
+          <select id="sim-month" style="min-width: 140px;">
+            <option>Janeiro</option>
+            <option selected>Fevereiro</option>
+            <option>Março</option>
+            <option>Dezembro</option>
+          </select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:12px; font-weight:600; color:var(--color-text-secondary);">Precipitação Mínima</label>
+          <select style="min-width: 140px;">
+            <option>≥ 5 mm</option>
+            <option>≥ 20 mm</option>
+            <option>≥ 50 mm (Extremo)</option>
+          </select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:12px; font-weight:600; color:var(--color-text-secondary);">Perfil Alvo (K-Means)</label>
+          <select style="min-width: 180px;">
+            <option>Todos os Perfis</option>
+            <option>Fragilidade Extrema</option>
+            <option>Vulneráveis Crônicos</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn-primary" onclick="runSim()">
+            <i class="ti ti-player-play" aria-hidden="true"></i> Rodar Projeção
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 24px;">
+      <div id="sim-result">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+          <div class="card" style="padding:0; overflow:hidden;">
+            <div style="padding: 14px 20px; border-bottom: 1px solid var(--color-border-tertiary);">
+              <span style="font-size:14px; font-weight:600; color:var(--color-text-primary);" id="sim-map-title">Mapa de Calor — Fevereiro (≥ 5mm)</span>
+            </div>
+            <div style="background: var(--color-background-secondary); padding: 20px; display: flex; justify-content: center;">
+              <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width: 400px; display:block;" role="img" aria-label="Mapa com bairros em alerta destacados">
+                <ellipse cx="140" cy="90" rx="120" ry="70" fill="#0057A8" opacity="0.1"/>
+                
+                <ellipse cx="50" cy="110" rx="38" ry="28" fill="#E24B4A" opacity="0.85"/>
+                <text x="50" y="107" text-anchor="middle" font-size="7" fill="#fff" font-weight="600">Zona Oeste</text>
+                <text x="50" y="116" text-anchor="middle" font-size="6" fill="#fff">ALERTA MÁXIMO</text>
+                
+                <ellipse cx="155" cy="72" rx="42" ry="25" fill="#EF9F27" opacity="0.7"/>
+                <text x="155" y="70" text-anchor="middle" font-size="7" fill="#fff" font-weight="600">Zona Norte</text>
+                <text x="155" y="79" text-anchor="middle" font-size="6" fill="#fff">Monitoramento</text>
+                
+                <ellipse cx="200" cy="110" rx="32" ry="20" fill="#EF9F27" opacity="0.6"/>
+                <text x="200" y="108" text-anchor="middle" font-size="7" fill="#fff" font-weight="600">Centro</text>
+                
+                <ellipse cx="225" cy="145" rx="30" ry="16" fill="#639922" opacity="0.7"/>
+                <text x="225" y="147" text-anchor="middle" font-size="7" fill="#fff" font-weight="600">Zona Sul</text>
+                
+                <circle cx="40" cy="100" r="4" fill="#791F1F" stroke="#fff" stroke-width="0.5"/>
+                <circle cx="55" cy="115" r="3" fill="#791F1F" stroke="#fff" stroke-width="0.5"/>
+                <circle cx="48" cy="125" r="3" fill="#791F1F" stroke="#fff" stroke-width="0.5"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="card" style="padding:0; overflow:hidden;">
+            <div style="padding: 14px 20px; border-bottom: 1px solid var(--color-border-tertiary); display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:14px; font-weight:600; color:var(--color-text-primary);">Ranking de Previsão Logit</span>
+              <span style="font-size:11px; color:var(--color-text-secondary); background: var(--color-background-secondary); padding: 4px 8px; border-radius: 4px;">Apenas n ≥ 3</span>
+            </div>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width: 30px;">#</th>
+                  <th>Bairro</th>
+                  <th>IVH</th>
+                  <th>Prob.</th>
+                  <th>Fator</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:var(--color-text-secondary); font-weight: 600;">1</td>
+                  <td style="font-weight:600;">Guaratiba</td>
+                  <td>87.3</td>
+                  <td><span class="prob-pill" style="background:#FEE2E2; color:#991B1B;">0.65%</span></td>
+                  <td style="color:#991B1B; font-weight:600;">3.0x</td>
+                </tr>
+                <tr>
+                  <td style="color:var(--color-text-secondary); font-weight: 600;">2</td>
+                  <td style="font-weight:600;">Campo Grande</td>
+                  <td>82.1</td>
+                  <td><span class="prob-pill" style="background:#FEE2E2; color:#991B1B;">0.65%</span></td>
+                  <td style="color:#991B1B; font-weight:600;">3.0x</td>
+                </tr>
+                <tr>
+                  <td style="color:var(--color-text-secondary); font-weight: 600;">3</td>
+                  <td style="font-weight:600;">Santa Cruz</td>
+                  <td>74.5</td>
+                  <td><span class="prob-pill" style="background:#FEF3C7; color:#92400E;">0.56%</span></td>
+                  <td style="color:#92400E; font-weight:600;">2.6x</td>
+                </tr>
+                <tr>
+                  <td style="color:var(--color-text-secondary); font-weight: 600;">4</td>
+                  <td style="font-weight:600;">Piedade</td>
+                  <td>61.2</td>
+                  <td><span class="prob-pill" style="background:#FEF3C7; color:#92400E;">0.47%</span></td>
+                  <td style="color:#92400E; font-weight:600;">2.2x</td>
+                </tr>
+                <tr>
+                  <td style="color:var(--color-text-secondary); font-weight: 600;">5</td>
+                  <td style="font-weight:600;">Tijuca</td>
+                  <td>55.8</td>
+                  <td><span class="prob-pill" style="background:#FEF3C7; color:#92400E;">0.43%</span></td>
+                  <td style="color:#92400E; font-weight:600;">2.0x</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="padding: 16px 20px; border-top: 1px solid var(--color-border-tertiary); display:flex; gap:12px; background: var(--color-background-secondary);">
+              <button class="btn-secondary">
+                <i class="ti ti-download" aria-hidden="true"></i> Relatório PDF
+              </button>
+              <button class="btn-primary" data-target="screen-bairro" style="flex: 1;">
+                <i class="ti ti-map-pin" aria-hidden="true"></i> Detalhar Bairro Crítico
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-banner">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="background: #fff; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(153, 27, 27, 0.2);">
+              <i class="ti ti-alert-triangle-filled" style="font-size:24px; color:#991B1B;" aria-hidden="true"></i>
+            </div>
+            <div>
+              <div id="sim-alert-title" style="font-size:15px; font-weight:700; color:#991B1B; margin-bottom: 2px;">3 bairros com vulnerabilidade crítica identificados</div>
+              <div style="font-size:13px; color:#991B1B; opacity:0.9;">Guaratiba, Campo Grande e Santa Cruz apresentam probabilidade 3.0x acima da taxa base da cidade.</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-primary" style="background:#991B1B; box-shadow: 0 4px 10px rgba(153, 27, 27, 0.3);">
+              <i class="ti ti-bell-ringing" aria-hidden="true"></i> Acionar Protocolo Defesa Civil
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Script melhorado para não depender da ordem dos botões
+  document.querySelectorAll('.nav-btn, .btn-primary').forEach(button => {
+    button.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      if (!targetId) return; // Ignora botões que não são de navegação
+      
+      // Esconde todas as telas
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      
+      // Remove a classe 'active' de todos os botões da navbar
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      
+      // Mostra a tela alvo
+      document.getElementById(targetId).classList.add('active');
+      
+      // Adiciona a classe 'active' ao botão da navbar correspondente
+      const navButton = document.querySelector(`.nav-btn[data-target="${targetId}"]`);
+      if (navButton) navButton.classList.add('active');
+    });
+  });
+
+  function filterMap(val) {
+    // Apenas um log para você plugar a lógica do seu Hackathon depois
+    console.log('Filtro ativado no mapa para o cluster:', val);
+  }
+
+  function runSim() {
+    const month = document.getElementById('sim-month').value;
+    
+    // Atualiza os textos dinamicamente na tela do simulador para dar feedback visual
+    document.getElementById('sim-map-title').textContent = `Mapa de Risco Projetado — ${month} (≥ 5mm)`;
+    document.getElementById('sim-alert-title').textContent = `Alerta Crítico: Sazonalidade de ${month} detectada`;
+    
+    // Efeito visual de recarregar o card
+    const resultArea = document.getElementById('sim-result');
+    resultArea.style.opacity = '0.5';
+    setTimeout(() => {
+      resultArea.style.opacity = '1';
+    }, 300);
+  }
+</script>
+
+</body>
+</html>
